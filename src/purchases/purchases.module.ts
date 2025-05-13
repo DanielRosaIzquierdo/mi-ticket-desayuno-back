@@ -5,6 +5,7 @@ import { PurchasesRepository } from './purchases.repository';
 
 @Module({
   controllers: [PurchasesController],
-  providers: [PurchasesService, PurchasesRepository]
+  providers: [PurchasesService, PurchasesRepository],
+  exports: [PurchasesService],
 })
 export class PurchasesModule {}

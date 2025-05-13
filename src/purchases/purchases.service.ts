@@ -15,4 +15,5 @@ export class PurchasesService {
     async registerPurchase(userId: string, purchaseData: PurchasePayloadDto): Promise<string> {
         return await this.purchasesRepository.savePurchase(userId, purchaseData);
     }
+
 }
