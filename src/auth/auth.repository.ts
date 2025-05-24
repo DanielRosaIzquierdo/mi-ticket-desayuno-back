@@ -13,6 +13,7 @@ export class AuthRepository {
             name,
             email,
             passwordHash: hashedPassword,
+            role: 'client',
         });
 
         return userRef.id;
@@ -34,6 +35,7 @@ export class AuthRepository {
             name: userData.name,
             email: userData.email,
             passwordHash: userData.passwordHash,
+            role: userData.role,
         };
 
         return user;

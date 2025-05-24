@@ -5,10 +5,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthRepository } from './auth.repository';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt/jwt-strategy';
+import { RolesGuard } from './guards/roles.guard';
 
 @Module({
   imports: [
-    PassportModule,
+   PassportModule,
     JwtModule.register({
       secret: 'ticket-desayuno-pi',
       signOptions: { expiresIn: '3600s' },
@@ -16,6 +17,6 @@ import { JwtStrategy } from './jwt/jwt-strategy';
     })
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthRepository, JwtStrategy]
+  providers: [AuthService, AuthRepository, JwtStrategy, RolesGuard]
 })
 export class AuthModule { }

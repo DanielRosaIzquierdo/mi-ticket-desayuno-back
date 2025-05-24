@@ -3,6 +3,8 @@ import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PurchasePayloadDto } from './dtos/purchase.payload.dto';
 import { PurchasesService } from './purchases.service';
+import { Role } from 'src/decorators/role.decorator';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @Controller('purchases')
 export class PurchasesController {
@@ -16,10 +18,31 @@ export class PurchasesController {
     }
 
     @Post('register')
-    @UseGuards(JwtAuthGuard)
-    async registerPurchase(@Request() req, @Body() purchaseData: PurchasePayloadDto) {
-        const userId = req.user.sub;
-        const purchaseId = await this.purchasesService.registerPurchase(userId, purchaseData);
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Role('stablishment')
+    async registerPurchase(@Body() purchaseData: PurchasePayloadDto) {
+        const purchaseId = await this.purchasesService.registerPurchase(purchaseData);
         return { purchaseId };
+    }
+
+    @Get('top-purchasers')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Role('stablishment')
+    async getTopPurchasers() {
+        return await this.purchasesService.getTopPurchasers();
+    }
+
+    @Get('top-spenders')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Role('stablishment')
+    async getTopSpenders() {
+        return await this.purchasesService.getTopSpenders();
+    }
+
+    @Get('all')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Role('stablishment')
+    async getAllPurchases() {
+        return await this.purchasesService.getAllPurchases();
     }
 }

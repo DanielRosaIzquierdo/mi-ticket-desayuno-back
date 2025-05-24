@@ -12,8 +12,19 @@ export class PurchasesService {
         return await this.purchasesRepository.findPurchasesByUser(userId);
     }
 
-    async registerPurchase(userId: string, purchaseData: PurchasePayloadDto): Promise<string> {
-        return await this.purchasesRepository.savePurchase(userId, purchaseData);
+    async registerPurchase(purchaseData: PurchasePayloadDto): Promise<string> {
+        return await this.purchasesRepository.savePurchase(purchaseData);
     }
 
+     async getTopPurchasers(): Promise<{ userId: string; purchaseCount: number }[]> {
+        return await this.purchasesRepository.findTopPurchasers();
+    }
+
+    async getTopSpenders(): Promise<{ userId: string; totalSpent: number }[]> {
+        return await this.purchasesRepository.findTopSpenders();
+    }
+
+    async getAllPurchases(): Promise<Purchase[]> {
+        return await this.purchasesRepository.findAllPurchases();
+    }
 }
