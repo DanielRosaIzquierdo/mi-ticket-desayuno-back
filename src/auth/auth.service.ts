@@ -43,7 +43,7 @@ export class AuthService {
             throw new Error('Invalid credentials');
         }
 
-        const token = this.generateToken({ email: user.email, sub: user.id, role: user.role });
+        const token = this.generateToken({ email: user.email, sub: user.id, role: user.role, name: user.name });
         return token;
     }
 }
