@@ -40,4 +40,29 @@ export class AuthRepository {
 
         return user;
     }
+
+    async findUserById(id: string): Promise<User | null> {
+        const firestore = this.firebaseAdmin.firestore();
+        const userDoc = await firestore.collection('users').doc(id).get();
+
+        if (!userDoc.exists) {
+            return null;
+        }
+
+        const userData = userDoc.data();
+
+        if (!userData) {
+            return null;
+        }
+
+        const user: User = {
+            id: userDoc.id,
+            name: userData.name,
+            email: userData.email,
+            passwordHash: userData.passwordHash,
+            role: userData.role,
+        };
+
+        return user;
+    }
 }

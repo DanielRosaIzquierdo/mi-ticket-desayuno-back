@@ -3,4 +3,5 @@ export interface Discount {
   type: 'spending' | 'purchases';
   value: number;
   conditions: string;
+  discount: number;
 }

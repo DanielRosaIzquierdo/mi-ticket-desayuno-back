@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsIn } from 'class-validator';
+import { IsString, IsNumber, IsIn, Min, Max, IsInt } from 'class-validator';
 
 export class DiscountPayloadDto {
 
@@ -10,4 +10,9 @@ export class DiscountPayloadDto {
 
   @IsString()
   conditions: string;
+
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  discount: number;
 }

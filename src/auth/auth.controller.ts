@@ -1,4 +1,4 @@
-import { Body, Controller, HttpException, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dtos/login-user.dto';
 import { RegisterUserDto } from './dtos/register-user.dto';
@@ -33,5 +33,15 @@ export class AuthController {
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
         }
+    }
+
+     @Get('user/:id')
+    async getUserById(@Param('id') id: string) {
+        const user = await this.authService.getUserById(id);
+        if (!user) {
+            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        }
+        const { passwordHash, ...userSafe } = user;
+        return userSafe;
     }
 }

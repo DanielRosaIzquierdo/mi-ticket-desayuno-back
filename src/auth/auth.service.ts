@@ -46,4 +46,8 @@ export class AuthService {
         const token = this.generateToken({ email: user.email, sub: user.id, role: user.role, name: user.name });
         return token;
     }
+
+    async getUserById(id: string) {
+        return await this.authRepository.findUserById(id);
+    }
 }

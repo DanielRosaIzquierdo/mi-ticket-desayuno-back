@@ -12,6 +12,10 @@ export class DiscountsService {
 private readonly purchaseService: PurchasesService,
   ) {}
 
+   async deleteDiscount(id: string): Promise<boolean> {
+    return await this.discountsRepository.deleteDiscount(id);
+  }
+
   async getDiscounts(): Promise<Discount[]> {
     return await this.discountsRepository.findDiscounts();
   }
