@@ -14,35 +14,6 @@ export class DiscountsService {
     private readonly authRepository: AuthRepository,
   ) { }
 
-  async getDiscountPercentByUserId(userId: string): Promise<number> {
-    const discounts = await this.discountsRepository.findDiscounts();
-    const purchases = await this.purchaseService.getPurchaseHistory(userId);
-
-    let totalPercent = 0;
-
-    for (const discount of discounts) {
-      let progress = 0;
-
-      if (discount.type === 'spending') {
-        const totalSpent = purchases.reduce((sum, purchase) => sum + purchase.totalAmount, 0);
-        progress = totalSpent / discount.value;
-      } else if (discount.type === 'purchases') {
-        const totalPurchases = purchases.length;
-        progress = totalPurchases / discount.value;
-      }
-
-      if (progress >= 1) {
-        totalPercent += discount.discount;
-      }
-    }
-
-    if (totalPercent > 100) {
-      totalPercent = 100;
-    }
-
-    return totalPercent > 0 ? totalPercent : 0;
-  }
-
   async deleteDiscount(id: string): Promise<boolean> {
     return await this.discountsRepository.deleteDiscount(id);
   }
