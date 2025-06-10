@@ -2,13 +2,25 @@ import { Injectable, Inject } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { Purchase } from './interfaces/purchase.interface';
 import { PurchasePayloadDto } from './dtos/purchase.payload.dto';
+import { AuthRepository } from '../auth/auth.repository';
 
 @Injectable()
 export class PurchasesRepository {
-    constructor(@Inject('FIREBASE_ADMIN') private readonly firebaseAdmin: typeof admin) { }
+    constructor(@Inject('FIREBASE_ADMIN') private readonly firebaseAdmin: typeof admin, private readonly authRepository: AuthRepository) { }
+
+    async deleteAllPurchases(): Promise<void> {
+        const firestore = this.firebaseAdmin.firestore();
+        const purchasesSnapshot = await firestore.collection('purchases').get();
+
+        const batch = firestore.batch();
+        purchasesSnapshot.docs.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+        await batch.commit();
+    }
 
     async findPurchasesByUser(userId: string): Promise<Purchase[]> {
-        
+
         const firestore = this.firebaseAdmin.firestore();
         const purchasesSnapshot = await firestore
             .collection('purchases')
@@ -40,7 +52,7 @@ export class PurchasesRepository {
         return purchaseRef.id;
     }
 
-    async findTopPurchasers(): Promise<{ userId: string; purchaseCount: number }[]> {
+    async findTopPurchasers(): Promise<{ email: string; purchaseCount: number }[]> {
         const firestore = this.firebaseAdmin.firestore();
         const purchasesSnapshot = await firestore.collection('purchases').get();
 
@@ -56,12 +68,18 @@ export class PurchasesRepository {
             userPurchaseCounts[userId] = (userPurchaseCounts[userId] || 0) + 1;
         });
 
-        return Object.entries(userPurchaseCounts)
-            .map(([userId, purchaseCount]) => ({ userId, purchaseCount }))
-            .sort((a, b) => b.purchaseCount - a.purchaseCount);
+        const results: { email: string; purchaseCount: number }[] = [];
+        for (const [userId, purchaseCount] of Object.entries(userPurchaseCounts)) {
+            const user = await this.authRepository.findUserById(userId);
+            results.push({
+                email: user?.email || 'Usuario eliminado',
+                purchaseCount,
+            });
+        }
+        return results.sort((a, b) => b.purchaseCount - a.purchaseCount);
     }
 
-    async findTopSpenders(): Promise<{ userId: string; totalSpent: number }[]> {
+    async findTopSpenders(): Promise<{ email: string; totalSpent: number }[]> {
         const firestore = this.firebaseAdmin.firestore();
         const purchasesSnapshot = await firestore.collection('purchases').get();
 
@@ -78,10 +96,17 @@ export class PurchasesRepository {
             userTotalSpent[userId] = (userTotalSpent[userId] || 0) + totalAmount;
         });
 
-        return Object.entries(userTotalSpent)
-            .map(([userId, totalSpent]) => ({ userId, totalSpent }))
-            .sort((a, b) => b.totalSpent - a.totalSpent);
+        const results: { email: string; totalSpent: number }[] = [];
+        for (const [userId, totalSpent] of Object.entries(userTotalSpent)) {
+            const user = await this.authRepository.findUserById(userId);
+            results.push({
+                email: user?.email || 'Usuario eliminado',
+                totalSpent,
+            });
+        }
+        return results.sort((a, b) => b.totalSpent - a.totalSpent);
     }
+
 
     async findAllPurchases(): Promise<Purchase[]> {
         const firestore = this.firebaseAdmin.firestore();

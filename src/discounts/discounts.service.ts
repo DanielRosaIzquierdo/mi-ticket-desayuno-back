@@ -4,15 +4,46 @@ import { DiscountsRepository } from './discounts.repository';
 import { Discount } from './interfaces/discount.interface';
 import { DiscountPayloadDto } from './dtos/discount.payload.dto';
 import { PurchasesService } from 'src/purchases/purchases.service';
+import { AuthRepository } from 'src/auth/auth.repository';
 
 @Injectable()
 export class DiscountsService {
   constructor(
     private readonly discountsRepository: DiscountsRepository,
-private readonly purchaseService: PurchasesService,
-  ) {}
+    private readonly purchaseService: PurchasesService,
+    private readonly authRepository: AuthRepository,
+  ) { }
 
-   async deleteDiscount(id: string): Promise<boolean> {
+  async getDiscountPercentByUserId(userId: string): Promise<number> {
+    const discounts = await this.discountsRepository.findDiscounts();
+    const purchases = await this.purchaseService.getPurchaseHistory(userId);
+
+    let totalPercent = 0;
+
+    for (const discount of discounts) {
+      let progress = 0;
+
+      if (discount.type === 'spending') {
+        const totalSpent = purchases.reduce((sum, purchase) => sum + purchase.totalAmount, 0);
+        progress = totalSpent / discount.value;
+      } else if (discount.type === 'purchases') {
+        const totalPurchases = purchases.length;
+        progress = totalPurchases / discount.value;
+      }
+
+      if (progress >= 1) {
+        totalPercent += discount.discount;
+      }
+    }
+
+    if (totalPercent > 100) {
+      totalPercent = 100;
+    }
+
+    return totalPercent > 0 ? totalPercent : 0;
+  }
+
+  async deleteDiscount(id: string): Promise<boolean> {
     return await this.discountsRepository.deleteDiscount(id);
   }
 
@@ -24,26 +55,34 @@ private readonly purchaseService: PurchasesService,
     return await this.discountsRepository.saveDiscount(discountData);
   }
 
-  async getDiscountProgress(userId: string): Promise<{ id: string; type: string; progress: number }[]> {
+  async getDiscountProgress(userId: string): Promise<{ id: string, type: string, value: number, conditions: string, discount: number, progress: number, }[]> {
     const discounts = await this.discountsRepository.findDiscounts();
     const purchases = await this.purchaseService.getPurchaseHistory(userId);
 
-    return discounts.map(discount => {
-      let progress = 0;
+    const user = await this.authRepository.findUserById(userId);
+    const usedDiscounts = user?.usedDiscounts || [];
 
-      if (discount.type === 'spending') {
-        const totalSpent = purchases.reduce((sum, purchase) => sum + purchase.totalAmount, 0);
-        progress = Math.min(totalSpent / discount.value, 1); 
-      } else if (discount.type === 'purchases') {
-        const totalPurchases = purchases.length;
-        progress = Math.min(totalPurchases / discount.value, 1); 
-      }
+    return discounts
+      .filter(discount => !usedDiscounts.includes(discount.id))
+      .map(discount => {
+        let progress = 0;
 
-      return {
-        id: discount.id,
-        type: discount.type,
-        progress,
-      };
-    });
+        if (discount.type === 'spending') {
+          const totalSpent = purchases.reduce((sum, purchase) => sum + purchase.totalAmount, 0);
+          progress = Math.min(totalSpent / discount.value, 1);
+        } else if (discount.type === 'purchases') {
+          const totalPurchases = purchases.length;
+          progress = Math.min(totalPurchases / discount.value, 1);
+        }
+
+        return {
+          id: discount.id,
+          type: discount.type,
+          value: discount.value,
+          conditions: discount.conditions,
+          discount: discount.discount,
+          progress,
+        };
+      });
   }
 }

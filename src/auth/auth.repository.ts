@@ -6,6 +6,14 @@ import { User } from './interfaces/user.interface';
 export class AuthRepository {
     constructor(@Inject('FIREBASE_ADMIN') private readonly firebaseAdmin: typeof admin) { }
 
+    async addUsedDiscountToUser(userId: string, discountId: string): Promise<void> {
+        const firestore = this.firebaseAdmin.firestore();
+        const userRef = firestore.collection('users').doc(userId);
+        await userRef.update({
+            usedDiscounts: admin.firestore.FieldValue.arrayUnion(discountId)
+        });
+    }
+
     async saveUser(name: string, email: string, hashedPassword: string): Promise<string> {
         const firestore = admin.firestore();
 
@@ -61,6 +69,7 @@ export class AuthRepository {
             email: userData.email,
             passwordHash: userData.passwordHash,
             role: userData.role,
+            usedDiscounts: userData.usedDiscounts || [],
         };
 
         return user;

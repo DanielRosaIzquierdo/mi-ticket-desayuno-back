@@ -14,12 +14,21 @@ export class DiscountsController {
   async getDiscounts() {
     return await this.discountsService.getDiscounts();
   }
-
+  
   @Get('progress')
   @UseGuards(JwtAuthGuard)
   async getDiscountProgress(@Request() req) {
     const userId: string = req.user.sub;
     return await this.discountsService.getDiscountProgress(userId);
+  }
+
+
+  @Get(':userId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Role('stablishment')
+  async getDiscountPercentByUserId(@Param('userId') userId: string) {
+    const percent = await this.discountsService.getDiscountPercentByUserId(userId);
+    return { percent: percent.toString() };
   }
 
   @Post()

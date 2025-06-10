@@ -4,4 +4,5 @@ export interface User {
     email: string;
     passwordHash: string;
     role: 'stablishment' | 'client';
+    usedDiscounts?: string[];
 }

@@ -5,6 +5,9 @@ import { Type } from "class-transformer";
 export class PurchasePayloadDto {
     @IsString()
     userId: string;
+    
+    @IsString()
+    discountId: string;
 
     @IsArray()
     products: Product[];

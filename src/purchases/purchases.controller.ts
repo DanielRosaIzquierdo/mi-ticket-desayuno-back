@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request, UseGuards, Delete } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PurchasePayloadDto } from './dtos/purchase.payload.dto';
@@ -45,4 +45,15 @@ export class PurchasesController {
     async getAllPurchases() {
         return await this.purchasesService.getAllPurchases();
     }
+
+
+
+    @Delete('all')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Role('stablishment')
+    async deleteAllPurchases() {
+        await this.purchasesService.deleteAllPurchases();
+        return { message: 'All purchases deleted successfully' };
+    }
+
 }

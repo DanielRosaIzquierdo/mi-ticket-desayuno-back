@@ -12,11 +12,12 @@ import { RolesGuard } from './guards/roles.guard';
    PassportModule,
     JwtModule.register({
       secret: 'ticket-desayuno-pi',
-      signOptions: { expiresIn: '3600s' },
+      signOptions: { expiresIn: '3h' },
 
     })
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthRepository, JwtStrategy, RolesGuard]
+  providers: [AuthService, AuthRepository, JwtStrategy, RolesGuard],
+  exports: [AuthRepository]
 })
 export class AuthModule { }
