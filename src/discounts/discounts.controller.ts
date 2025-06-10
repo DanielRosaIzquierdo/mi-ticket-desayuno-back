@@ -18,6 +18,7 @@ export class DiscountsController {
   @Get('progress')
   @UseGuards(JwtAuthGuard)
   async getDiscountProgress(@Request() req) {
+    console.log('llego')
     const userId: string = req.user.sub;
     return await this.discountsService.getDiscountProgress(userId);
   }

@@ -11,7 +11,7 @@ import { RolesGuard } from './guards/roles.guard';
   imports: [
    PassportModule,
     JwtModule.register({
-      secret: 'ticket-desayuno-pi',
+      secret: process.env.JWT_SECRET!,
       signOptions: { expiresIn: '3h' },
 
     })
